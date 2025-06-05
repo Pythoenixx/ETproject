@@ -1,0 +1,114 @@
+:root {
+  --forest-primary: #2d5a27;
+  --forest-secondary: #4a7d3a;
+  --forest-light: #6ba05c;
+  --forest-accent: #8bc34a;
+  --forest-mint: #47c4a9;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f8f9fa;
+}
+
+.navbar-forest {
+  background: linear-gradient(135deg, var(--forest-accent), #88d8c0);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.navbar-brand {
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: var(--forest-primary) !important;
+}
+
+.nav-link {
+  color: var(--forest-primary) !important;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #1a3d1a !important;
+  transform: translateY(-1px);
+}
+
+.hero-section {
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.5)),
+    url('/images/forest.jpg');  min-height: 60vh;
+  display: flex;
+  align-items: center;
+}
+
+.btn-create-forest {
+  background: linear-gradient(135deg, var(--forest-accent), #7dd3c0);
+  border: none;
+  color: var(--forest-primary);
+  font-weight: bold;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(125, 211, 192, 0.3);
+}
+
+.btn-create-forest:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(125, 211, 192, 0.4);
+  color: var(--forest-primary);
+}
+
+.info-section {
+  background: white;
+  padding: 80px 0;
+}
+
+.info-card {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  height: 100%;
+  transition: transform 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e9ecef;
+}
+
+.info-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.info-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.info-card h5 {
+  color: var(--forest-primary);
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.info-card p {
+  color: #6c757d;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.footer-forest {
+  background: linear-gradient(135deg, var(--forest-accent), #88d8c0);
+  color: var(--forest-primary);
+  padding: 40px 0;
+}
+
+.section-title {
+  color: var(--forest-primary);
+  font-weight: bold;
+  font-size: 2rem;
+  margin-bottom: 30px;
+}
