@@ -29,15 +29,16 @@
                 Production Data
               </a>
               <ul class="dropdown-menu">
-                <li><router-link to="/production-data" class="dropdown-item">View Production</router-link></li>
+                <li><router-link to="/final-output" class="dropdown-item">Final Output</router-link></li>
+                <li><router-link to="/stand-table" class="dropdown-item">Stand Table</router-link></li>
               </ul>
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                Cutting Regions
+                Cutting Regime
               </a>
               <ul class="dropdown-menu">
-                <li><router-link to="/cutting-regions" class="dropdown-item">View Regions</router-link></li>
+                <li><router-link to="/cutting-regime" class="dropdown-item">Regime</router-link></li>
               </ul>
             </li>
             <li class="nav-item dropdown">
@@ -45,7 +46,9 @@
                 Data Visualization
               </a>
               <ul class="dropdown-menu">
-                <li><router-link to="/tree-plot" class="dropdown-item">Tree Plot</router-link></li>
+                <li><router-link to="/tree-map" class="dropdown-item">Tree Map</router-link></li>
+                <li><router-link to="/analysis" class="dropdown-item">Analysis</router-link></li>
+
               </ul>
             </li>
           </ul>
@@ -59,9 +62,9 @@
     <!-- Footer -->
     <footer class="footer-forest text-center">
       <div class="container">
-        <p class="mb-2">Copyright: foresTopia All Right Reserved</p>
+        <p class="mb-2">Copyright: ForestEye All Right Reserved</p>
         <p class="mb-0">
-          <small>Powered By: Green Information System International Sdn Bhd</small>
+          <!-- <small>Powered By: Green Information System International Sdn Bhd</small> -->
         </p>
       </div>
     </footer>

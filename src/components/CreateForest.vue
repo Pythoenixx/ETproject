@@ -201,7 +201,7 @@ import Papa from 'papaparse'
 import Chart from 'chart.js/auto'
 
 export default {
-  name: 'DataVisualization',
+  name: 'CreateForest',
   setup() {
     // Reactive data
     const forestData = ref([])

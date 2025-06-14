@@ -9,9 +9,9 @@
               Welcome To ForestEye
             </h1>
             <p class="lead text-white mb-5">
-              This is a simple project to manage and visualize forest data.
+              This is a simple application to manage and visualize your forest data.
             </p>
-            <router-link to="/data-visualization" class="btn btn-create-forest btn-lg">
+            <router-link to="/create-forest" class="btn btn-create-forest btn-lg">
               CREATE FOREST
             </router-link>
           </div>

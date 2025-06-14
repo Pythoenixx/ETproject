@@ -8,7 +8,25 @@
             Block {{ block }}
           </option>
         </select>
+        
+    <!-- Tooltip -->
+    <div 
+      v-if="tooltip.visible" 
+      class="tooltip"
+      :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }"
+    >
+      <div><strong>Tree ID:</strong> {{ tooltip.tree?.id || 'N/A' }}</div>
+      <div><strong>Position:</strong> ({{ tooltip.tree?.x }}, {{ tooltip.tree?.y }})</div>
+      <div><strong>Species Group:</strong> {{ tooltip.tree?.spgroup }}</div>
+      <div><strong>Status:</strong> {{ tooltip.tree?.status }}</div>
+      <div v-if="tooltip.tree?.status.toUpperCase() === 'CUT'">
+        <strong>Cut Angle:</strong> {{ tooltip.tree?.cutAngle }}°
       </div>
+      <div v-if="tooltip.tree?.stemHeight">
+        <strong>Stem Height:</strong> {{ tooltip.tree?.stemHeight }}
+      </div>
+    </div>
+  </div>
       
       <div class="control-group">
         <label>
@@ -37,8 +55,8 @@
           type="range" 
           id="pointSize" 
           v-model="pointSize" 
-          min="2" 
-          max="10" 
+          min="1" 
+          max="8" 
           @input="redrawPlot"
         >
         <span>{{ pointSize }}px</span>
@@ -52,9 +70,8 @@
         :height="plotHeight"
         @mousemove="handleMouseMove"
         @mouseleave="hideTooltip"
-        width="100%" 
-        height="100%"
-        viewBox="0 0 600 600"
+        :viewBox="`0 0 ${plotWidth} ${plotHeight}`"
+        preserveAspectRatio="xMidYMid meet"
       >
         <!-- Grid lines -->
         <g v-if="showGrid" class="grid">
@@ -81,9 +98,9 @@
             :key="`crown-${index}`"
             :cx="scaleX(tree.crownCenter.x)"
             :cy="scaleY(tree.crownCenter.y)"
-            :r="scaleDistance(5)"
-            fill="rgba(0, 255, 0, 0.2)"
-            stroke="green"
+            :r="scaleDistance(6)"
+            fill="rgba(0, 200, 0, 0.15)"
+            stroke="rgba(0, 150, 0, 0.4)"
             stroke-width="1"
           />
         </g>
@@ -96,16 +113,16 @@
               :y1="scaleY(tree.y)" 
               :x2="scaleX(tree.cutLine1.x)" 
               :y2="scaleY(tree.cutLine1.y)"
-              stroke="black" 
-              stroke-width="1"
+              stroke="rgba(0, 0, 0, 0.8)" 
+              stroke-width="1.5"
             />
             <line 
               :x1="scaleX(tree.x)" 
               :y1="scaleY(tree.y)" 
               :x2="scaleX(tree.cutLine2.x)" 
               :y2="scaleY(tree.cutLine2.y)"
-              stroke="black" 
-              stroke-width="1"
+              stroke="rgba(0, 0, 0, 0.8)" 
+              stroke-width="1.5"
             />
           </g>
         </g>
@@ -119,74 +136,66 @@
             :cy="scaleY(tree.y)"
             :r="pointSize"
             :fill="getTreeColor(tree)"
-            :stroke="tree.status.toUpperCase() === 'CUT' ? 'red' : 'black'"
-            :stroke-width="tree.status.toUpperCase() === 'CUT' ? 2 : 1"
+            :stroke="getTreeStroke(tree)"
+            :stroke-width="getTreeStrokeWidth(tree)"
             class="tree-point"
             @mouseenter="showTooltip($event, tree)"
           />
         </g>
         
         <!-- Axis labels -->
-        <text :x="plotWidth / 2" :y="plotHeight - 5" text-anchor="middle" class="axis-label">
+        <text :x="plotWidth / 2" :y="plotHeight - 20" text-anchor="middle" class="axis-label">
           X Position
         </text>
-        <text :x="15" :y="plotHeight / 2" text-anchor="middle" transform="rotate(-90, 15, 180)" class="axis-label">
+        <text :x="-150" :y="plotHeight / 2" text-anchor="middle" transform="rotate(-90, -90, 220)" class="axis-label">
           Y Position
         </text>
       </svg>
       
       <!-- Legend -->
-      <div class="legend">
-        <h4>Species Groups</h4>
-        <div class="legend-items">
-          <div v-for="(color, group) in spgroupColors" :key="group" class="legend-item">
-            <div class="legend-color" :style="{ backgroundColor: color }"></div>
-            <span>Group {{ group }}</span>
+      <div class="sidebar">
+        <div class="legend">
+          <h4>Species Groups</h4>
+          <div class="legend-items">
+            <div v-for="(color, group) in spgroupColors" :key="group" class="legend-item">
+              <div class="legend-color" :style="{ backgroundColor: color }"></div>
+              <span>Group {{ group }}</span>
+            </div>
+          </div>
+          
+          <h4 style="margin-top: 15px;">Status Legend</h4>
+          <div class="legend-items">
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: #228B22; border: 1.5px solid #CC0000;"></div>
+              <span>Cut Trees</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: #228B22; border: 1px solid #FF6600;"></div>
+              <span>Victim Trees</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: #228B22; border: 0.5px solid rgba(0,0,0,0.3);"></div>
+              <span>Keep Trees</span>
+            </div>
           </div>
         </div>
         
-        <h4 style="margin-top: 15px;">Status Legend</h4>
-        <div class="legend-items">
-          <div class="legend-item">
-            <div class="legend-color" style="background-color: red; border: 2px solid red;"></div>
-            <span>Cut Trees (with red border)</span>
-          </div>
+        <!-- Statistics Panel -->
+        <div class="stats-panel">
+          <h4>Statistics</h4>
+          <div>Total Trees: {{ filteredTrees.length }}</div>
+          <div>Cut Trees: {{ filteredTrees.filter(t => t.status.toUpperCase() === 'CUT').length }}</div>
+          <div>Keep Trees: {{ filteredTrees.filter(t => t.status.toUpperCase() === 'KEEP').length }}</div>
+          <div>Victim Trees: {{ filteredTrees.filter(t => t.status.toUpperCase() === 'VICTIM').length }}</div>
         </div>
       </div>
-    </div>
-    
-    <!-- Tooltip -->
-    <div 
-      v-if="tooltip.visible" 
-      class="tooltip"
-      :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }"
-    >
-      <div><strong>Tree ID:</strong> {{ tooltip.tree?.id || 'N/A' }}</div>
-      <div><strong>Position:</strong> ({{ tooltip.tree?.x }}, {{ tooltip.tree?.y }})</div>
-      <div><strong>Species Group:</strong> {{ tooltip.tree?.spgroup }}</div>
-      <div><strong>Status:</strong> {{ tooltip.tree?.status }}</div>
-      <div v-if="tooltip.tree?.status.toUpperCase() === 'CUT'">
-        <strong>Cut Angle:</strong> {{ tooltip.tree?.cutAngle }}°
-      </div>
-      <div v-if="tooltip.tree?.stemHeight">
-        <strong>Stem Height:</strong> {{ tooltip.tree?.stemHeight }}
-      </div>
-    </div>
-    
-    <!-- Statistics Panel -->
-    <div class="stats-panel">
-      <h4>Statistics</h4>
-      <div>Total Trees: {{ filteredTrees.length }}</div>
-      <div>Cut Trees: {{ filteredTrees.filter(t => t.status.toUpperCase() === 'CUT').length }}</div>
-      <div>Keep Trees: {{ filteredTrees.filter(t => t.status.toUpperCase() === 'KEEP').length }}</div>
-      <div>Victim Trees: {{ filteredTrees.filter(t => t.status.toUpperCase() === 'VICTIM').length }}</div>
     </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'TreePlot',
+  name: 'TreeMap',
   props: {
     treeData: {
       type: Array,
@@ -199,9 +208,9 @@ export default {
       showCutLines: true,
       showCrownAOE: true,
       showGrid: true,
-      pointSize: 4,
-      plotWidth: 600,
-      plotHeight: 600,
+      pointSize: 3,
+      plotWidth: 800,
+      plotHeight: 700,
       margin: 60,
       tooltip: {
         visible: false,
@@ -239,21 +248,29 @@ export default {
   },
   methods: {
     generateSampleData() {
-      // Generate sample data for demonstration
+      // Generate sample data for demonstration - more trees like the reference image
       const sampleTrees = [];
-      for (let i = 0; i < 50; i++) {
+      for (let i = 0; i < 400; i++) {
         const tree = {
           id: i + 1,
           x: Math.random() * 100,
           y: Math.random() * 100,
           spgroup: Math.floor(Math.random() * 7) + 1,
-          status: ['KEEP', 'CUT', 'VICTIM', '-'][Math.floor(Math.random() * 4)],
+          status: this.getRandomStatus(),
           cutAngle: Math.random() * 360,
           stemHeight: 10 + Math.random() * 20
         };
         sampleTrees.push(this.processTreeData(tree));
       }
       return sampleTrees;
+    },
+    
+    getRandomStatus() {
+      const rand = Math.random();
+      if (rand < 0.6) return 'KEEP';      // 60% keep
+      else if (rand < 0.75) return 'CUT';  // 15% cut
+      else if (rand < 0.85) return 'VICTIM'; // 10% victim
+      else return '-';                     // 15% other
     },
     
     processTreeData(tree) {
@@ -327,6 +344,20 @@ export default {
       return this.spgroupColors[tree.spgroup] || "#000000";
     },
     
+    getTreeStroke(tree) {
+      const status = tree.status.toUpperCase();
+      if (status === 'CUT') return '#CC0000';
+      if (status === 'VICTIM') return '#FF6600';
+      return 'rgba(0, 0, 0, 0.3)';
+    },
+    
+    getTreeStrokeWidth(tree) {
+      const status = tree.status.toUpperCase();
+      if (status === 'CUT') return 1.5;
+      if (status === 'VICTIM') return 1;
+      return 0.5;
+    },
+    
     showTooltip(event, tree) {
       this.tooltip = {
         visible: true,
@@ -362,6 +393,8 @@ export default {
   gap: 20px;
   padding: 20px;
   font-family: Arial, sans-serif;
+  min-height: 100vh;
+  width: 100%;
 }
 
 .controls-panel {
@@ -396,12 +429,16 @@ export default {
   display: flex;
   gap: 20px;
   align-items: flex-start;
+  flex: 1;
+  width: 100%;
 }
 
 svg {
   border: 1px solid #ccc;
   background-color: white;
   border-radius: 4px;
+  flex: 1;
+  max-width: calc(100vw - 300px);
 }
 
 .tree-point {
@@ -425,6 +462,13 @@ svg {
   background-color: #f9f9f9;
   border: 1px solid #ddd;
   border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  min-width: 250px;
 }
 
 .legend h4 {
@@ -468,14 +512,12 @@ svg {
 }
 
 .stats-panel {
-  position: fixed;
-  top: 20px;
-  right: 20px;
   padding: 15px;
   background-color: rgba(255, 255, 255, 0.95);
   border: 1px solid #ddd;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 150px;
 }
 
 .stats-panel h4 {
@@ -501,16 +543,18 @@ svg {
     flex-direction: column;
   }
   
+  .sidebar {
+    min-width: auto;
+    width: 100%;
+  }
+  
   .controls-panel {
     flex-direction: column;
     align-items: flex-start;
   }
   
-  .stats-panel {
-    position: relative;
-    top: auto;
-    right: auto;
-    margin-top: 20px;
+  svg {
+    max-width: 100%;
   }
 }
 </style>
