@@ -173,20 +173,25 @@ export default {
     const sortDirection = ref('asc')
 
     // Define table headers with display text and sorting keys
-    const tableHeaders = ref([
-      { key: 'TreeNum', text: 'Tree #' },
-      { key: 'species', text: 'Species' },
-      { key: 'BlockX', text: 'Block X', type: 'number' },
-      { key: 'BlockY', text: 'Block Y', type: 'number' },
-      { key: 'x', text: 'X Coord', type: 'number' },
-      { key: 'y', text: 'Y Coord', type: 'number' },
-      { key: 'Diameter (dbc cm)', text: 'Diameter (cm)' },
-      { key: 'Stem Height', text: 'Height' },
-      { key: 'Volume (m3)', text: 'Volume (m³)' },
-      { key: 'status', text: 'Status' },
-      { key: 'PROD', text: 'Productivity' },
-      { key: 'Damage(Cut angle)', text: 'Damage' }
-    ])
+  const tableHeaders = ref([
+    { key: 'TreeNum', text: 'TreeNum' },
+    { key: 'species', text: 'species' },
+    { key: 'BlockX', text: 'BlockX', type: 'number' },
+    { key: 'BlockY', text: 'BlockY', type: 'number' },
+    { key: 'x', text: 'x', type: 'number' },
+    { key: 'y', text: 'y', type: 'number' },
+    { key: 'Diameter (dbc cm)', text: 'Diameter (dbc cm)' },
+    { key: 'Stem Height', text: 'Stem Height' },
+    { key: 'Volume (m3)', text: 'Volume (m3)' },
+    { key: 'status', text: 'status' },
+    { key: 'PROD', text: 'PROD' },
+    { key: 'Damage(Cut angle)', text: 'Damage(Cut angle)' },
+    { key: 'Damage STEM', text: 'Damage STEM' },
+    { key: 'Damage Crown', text: 'Damage Crown' },
+    { key: 'd30', text: 'd30' },
+    { key: 'VOL30', text: 'VOL30' }
+  ])
+
 
     // CSV file path
     const CSV_FILE_PATH = forestCsvUrl
