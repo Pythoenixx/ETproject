@@ -157,7 +157,7 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import Papa from 'papaparse'
-import forestCsvUrl from '../assets/Forest.csv?url'
+import forestCsvUrl from '../assets/forest_45.csv?url'
 
 export default {
   name: 'TreeList',
