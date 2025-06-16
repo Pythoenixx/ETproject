@@ -5,13 +5,13 @@
         <div class="col-lg-12">
           <div class="card shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
             <!-- Header -->
-            <div class="card-header text-white text-center py-5" style="background: linear-gradient(135deg, #2d5a27, #4a7d3a);">
+            <div class="card-header text-white text-center py-5" style="background: linear-gradient(135deg, #9c2f2f, #c44545);">
               <h1 class="display-5 fw-bold mb-3">
-                <i class="bi bi-tree-fill me-3"></i>Stand Table General
+                <i class="bi bi-exclamation-diamond-fill me-3"></i>Stand Table Damage
               </h1>
-              <p class="lead mb-0">Diameter Class Distribution by Species Group</p>
+              <p class="lead mb-0">Diameter Class Damage Distribution by Species Group</p>
 
-              <!-- Regime Selector -->
+              <!-- Regime Selection -->
               <div class="mt-4">
                 <label for="regime-select" class="form-label text-white">Select Regime:</label>
                 <select 
@@ -25,14 +25,14 @@
               </div>
             </div>
 
-            <!-- Content -->
+            <!-- Body -->
             <div class="card-body p-5">
               <!-- Loading -->
               <div v-if="loading" class="text-center py-5">
-                <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;">
+                <div class="spinner-border text-danger" role="status" style="width: 3rem; height: 3rem;">
                   <span class="visually-hidden">Loading...</span>
                 </div>
-                <p class="mt-3 text-muted">Loading data for Stand Table {{ selectedRegime }}...</p>
+                <p class="mt-3 text-muted">Loading damage data for regime {{ selectedRegime }}...</p>
               </div>
 
               <!-- Error -->
@@ -40,33 +40,32 @@
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
               </div>
 
-              
-
-              <!-- Data Table -->
+              <!-- Content -->
               <div v-else>
-                <!-- Toggle between Num and Vol -->
+                <!-- Toggle -->
                 <div class="d-flex justify-content-center align-items-center mb-4">
-                  <div class="btn-group" role="group" aria-label="Metric Type Toggle">
+                  <div class="btn-group" role="group">
                     <button 
                       class="btn" 
-                      :class="metricType === 'Num' ? 'btn-success' : 'btn-outline-success'"
+                      :class="metricType === 'Num' ? 'btn-danger' : 'btn-outline-danger'"
                       @click="metricType = 'Num'"
                     >
-                      Number (Num)
+                      View by Number
                     </button>
                     <button 
                       class="btn" 
-                      :class="metricType === 'Vol' ? 'btn-success' : 'btn-outline-success'"
+                      :class="metricType === 'Vol' ? 'btn-danger' : 'btn-outline-danger'"
                       @click="metricType = 'Vol'"
                     >
-                      Volume (Vol)
+                      View by Volume
                     </button>
                   </div>
                 </div>
 
+                <!-- Table -->
                 <div class="table-responsive">
                   <table class="table table-hover table-striped align-middle text-center">
-                    <thead class="table-success">
+                    <thead class="table-danger">
                       <tr>
                         <th>Species Group</th>
                         <th>Metric</th>
@@ -95,11 +94,12 @@
 
                 <!-- Summary -->
                 <div class="mt-4 text-end text-muted">
-                  <p>Total Volume: <strong>{{ formatValue(totalSum) }}</strong></p>
+                  <p>Total Damage: <strong>{{ formatValue(totalSum) }}</strong></p>
                   <p>Average per Species Group: <strong>{{ formatValue(averagePerGroup) }}</strong></p>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -116,7 +116,7 @@ export default {
       tableData: [],
       loading: false,
       error: null,
-      metricType: 'Num'
+      metricType: 'Vol'
     };
   },
   computed: {
@@ -139,13 +139,13 @@ export default {
       this.error = null;
 
       try {
-        const res = await fetch(`http://localhost:5000/api/stand-table?regime=${this.selectedRegime}`);
+        const res = await fetch(`http://localhost:5000/api/stand-table-damage?regime=${this.selectedRegime}`);
         const data = await res.json();
 
         if (res.ok) {
           this.tableData = data;
         } else {
-          throw new Error(data.error || 'Failed to fetch data');
+          throw new Error(data.error || 'Failed to fetch damage table');
         }
       } catch (err) {
         this.error = err.message;
@@ -187,9 +187,9 @@ export default {
   background-color: rgba(0, 0, 0, 0.02);
 }
 .table-hover tbody tr:hover {
-  background-color: rgba(74, 125, 58, 0.05);
+  background-color: rgba(196, 69, 69, 0.05);
 }
-.text-success {
-  color: #2d5a27 !important;
+.text-danger {
+  color: #9c2f2f !important;
 }
 </style>
