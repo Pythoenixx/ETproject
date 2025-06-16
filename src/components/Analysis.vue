@@ -56,35 +56,45 @@ export default {
       regimes: ['45', '50', '55', '60', '65'],
       selectedRegimes: ['45', '50', '55', '60', '65'],
       selectedMetric: 'volume', // 'volume' or 'number'
-      sustainabilityData: {},   // will store values per regime
+      sustainabilityData: {},
       loading: true,
     };
   },
   computed: {
     chartData() {
       const labels = this.selectedRegimes;
-      const metricLabel = this.selectedMetric === 'number' ? 'Num' : 'Vol';
+      const isNumber = this.selectedMetric === 'number';
 
       return {
         labels,
         datasets: [
           {
-            label: this.selectedMetric === 'number' ? 'Total Trees' : 'Total Production (m³)',
+            label: isNumber ? 'Standing Trees' : 'Standing Volume', // General
+            backgroundColor: '#6f42c1',
+            data: labels.map(r => this.sustainabilityData[r]?.stand || 0),
+          },
+          {
+            label: isNumber ? 'Harvested Trees' : 'Harvested Volume', // Production
             backgroundColor: '#28a745',
             data: labels.map(r => this.sustainabilityData[r]?.production || 0),
           },
           {
-            label: this.selectedMetric === 'number' ? 'Remaining Trees' : 'Remaining Volume (m³)',
+            label: isNumber ? 'Remaining Trees' : 'Remaining Volume', // Remaining
             backgroundColor: '#007bff',
             data: labels.map(r => this.sustainabilityData[r]?.remaining || 0),
           },
           {
-            label: this.selectedMetric === 'number' ? 'Damaged Trees' : 'Damage Volume (m³)',
+            label: isNumber ? 'Damaged Trees' : 'Damaged Volume', // Damage
             backgroundColor: '#dc3545',
             data: labels.map(r => this.sustainabilityData[r]?.damage || 0),
           },
           {
-            label: '30-Year Production',
+            label: isNumber ? 'Future Standing Trees (30 yrs)' : 'Future Standing Volume (30 yrs)', // General (30 yrs)
+            backgroundColor: '#20c997',
+            data: labels.map(r => this.sustainabilityData[r]?.general || 0),
+          },
+          {
+            label: isNumber ? 'Future Harvest (30 yrs)' : 'Projected Harvest (30 yrs)', // Production (30 yrs)
             backgroundColor: '#ffc107',
             data: labels.map(r => this.sustainabilityData[r]?.prod30 || 0),
           },
@@ -138,7 +148,15 @@ export default {
 
       for (const regime of this.regimes) {
         try {
-          const [prodRes, remRes, dmgRes, genRes, prod30Res] = await Promise.all([
+          const [
+            standRes,              // `/api/stand-table`
+            prodRes,               // `/api/stand-table-production`
+            remRes,                // `/api/stand-table-remaining`
+            dmgRes,                // `/api/stand-table-damage`
+            genRes,                // `/api/stand-table-general` (30 years)
+            prod30Res              // `/api/stand-table-production30`
+          ] = await Promise.all([
+            fetch(`http://localhost:5000/api/stand-table?regime=${regime}`),
             fetch(`http://localhost:5000/api/stand-table-production?regime=${regime}`),
             fetch(`http://localhost:5000/api/stand-table-remaining?regime=${regime}`),
             fetch(`http://localhost:5000/api/stand-table-damage?regime=${regime}`),
@@ -146,7 +164,15 @@ export default {
             fetch(`http://localhost:5000/api/stand-table-production30?regime=${regime}`),
           ]);
 
-          const [prodData, remData, dmgData, genData, prod30Data] = await Promise.all([
+          const [
+            standData,
+            prodData,
+            remData,
+            dmgData,
+            genData,
+            prod30Data
+          ] = await Promise.all([
+            standRes.json(),
             prodRes.json(),
             remRes.json(),
             dmgRes.json(),
@@ -155,6 +181,7 @@ export default {
           ]);
 
           results[regime] = {
+            stand: this.calculateTotalByMetric(standData, metricType),
             production: this.calculateTotalByMetric(prodData, metricType),
             remaining: this.calculateTotalByMetric(remData, metricType),
             damage: this.calculateTotalByMetric(dmgData, metricType),
@@ -172,7 +199,7 @@ export default {
   },
   watch: {
     selectedMetric() {
-      this.fetchAllData(); // refetch when user switches between "number" and "volume"
+      this.fetchAllData(); // reload data on metric switch
     },
   },
   mounted() {
@@ -189,5 +216,6 @@ export default {
   background-color: #28a745;
   color: white;
   border-color: #28a745;
+  z-index: 0;
 }
 </style>

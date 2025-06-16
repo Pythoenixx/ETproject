@@ -95,8 +95,8 @@
 
                 <!-- Summary -->
                 <div class="mt-4 text-end text-muted">
-                  <p>Total Volume: <strong>{{ formatValue(totalSum) }}</strong></p>
-                  <p>Average per Species Group: <strong>{{ formatValue(averagePerGroup) }}</strong></p>
+                  <p>Total {{ metricType === 'Num' ? 'Trees' : 'Volume' }}: {{ formatValue(totalSum) }}</p>
+                  <p>Average per Species Group: {{ formatValue(averagePerGroup) }}</p>
                 </div>
               </div>
             </div>
