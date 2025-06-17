@@ -30,15 +30,27 @@
               </a>
               <ul class="dropdown-menu">
                 <li><router-link to="/final-output" class="dropdown-item">Final Output</router-link></li>
-                <li><router-link to="/stand-table" class="dropdown-item">Stand Table</router-link></li>
+                
+                <!-- Nested Dropdown for Stand Table -->
+                <li class="dropdown-submenu">
+                <span class="dropdown-item dropdown-toggle" style="cursor: default;">Stand Table</span>
+                  <ul class="dropdown-menu">
+                    <li><router-link to="/stand-table/general" class="dropdown-item">General</router-link></li>
+                    <li><router-link to="/stand-table/production" class="dropdown-item">Production</router-link></li>
+                    <li><router-link to="/stand-table/damage" class="dropdown-item">Damage</router-link></li>
+                    <li><router-link to="/stand-table/remaining" class="dropdown-item">Remaining</router-link></li>
+                    <li><router-link to="/stand-table/general30" class="dropdown-item">General 30 Years</router-link></li>
+                    <li><router-link to="/stand-table/production30" class="dropdown-item">Production 30 years</router-link></li>
+                  </ul>
+                </li>
               </ul>
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                Cutting Regime
+                Regime
               </a>
               <ul class="dropdown-menu">
-                <li><router-link to="/cutting-regime" class="dropdown-item">Regime</router-link></li>
+                <li><router-link to="/regime" class="dropdown-item">Forest Regime</router-link></li>
               </ul>
             </li>
             <li class="nav-item dropdown">
@@ -76,3 +88,17 @@ export default {
   name: 'App'
 }
 </script>
+
+<style>
+/* Ensure submenu appears on hover */
+.dropdown-submenu:hover .dropdown-menu {
+  display: block;
+}
+
+/* Position the submenu to the right */
+.dropdown-submenu .dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -0.5rem;
+  margin-left: 0.125rem;
+}</style>

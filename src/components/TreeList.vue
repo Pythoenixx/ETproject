@@ -13,6 +13,36 @@
             </div>
 
             <div class="card-body p-5">
+              <!-- Statistics Cards -->
+              <div class="row g-4">
+                <div class="col-md-4">
+                  <div class="card stat-card h-100">
+                    <div class="card-body text-center">
+                      <div class="display-6 fw-bold text-success mb-2">{{ totalTrees }}</div>
+                      <div class="text-muted small text-uppercase">Total Trees</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card stat-card h-100">
+                    <div class="card-body text-center">
+                      <div class="display-6 fw-bold text-success mb-2">{{ totalSpecies }}</div>
+                      <div class="text-muted small text-uppercase">Unique Species</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card stat-card h-100">
+                    <div class="card-body text-center">
+                      <div class="display-6 fw-bold text-success mb-2">{{ totalSpeciesGroups }}</div>
+                      <div class="text-muted small text-uppercase">Species Groups</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body p-5">
               <!-- Loading State -->
               <div v-if="loading" class="text-center py-5">
                 <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;">
@@ -156,8 +186,6 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue'
-import Papa from 'papaparse'
-import forestCsvUrl from '../assets/forest_45.csv?url'
 
 export default {
   name: 'TreeList',
@@ -172,31 +200,69 @@ export default {
     const sortBy = ref('TreeNum')
     const sortDirection = ref('asc')
 
-    // Define table headers with display text and sorting keys
-  const tableHeaders = ref([
-    { key: 'TreeNum', text: 'TreeNum' },
-    { key: 'species', text: 'species' },
-    { key: 'BlockX', text: 'BlockX', type: 'number' },
-    { key: 'BlockY', text: 'BlockY', type: 'number' },
-    { key: 'x', text: 'x', type: 'number' },
-    { key: 'y', text: 'y', type: 'number' },
-    { key: 'Diameter (dbc cm)', text: 'Diameter (dbc cm)' },
-    { key: 'Stem Height', text: 'Stem Height' },
-    { key: 'Volume (m3)', text: 'Volume (m3)' },
-    { key: 'status', text: 'status' },
-    { key: 'PROD', text: 'PROD' },
-    { key: 'Damage(Cut angle)', text: 'Damage(Cut angle)' },
-    { key: 'Damage STEM', text: 'Damage STEM' },
-    { key: 'Damage Crown', text: 'Damage Crown' },
-    { key: 'd30', text: 'd30' },
-    { key: 'VOL30', text: 'VOL30' }
-  ])
+    // Table headers updated to match your database columns
+    const tableHeaders = ref([
+      { key: 'treeNum', text: 'Tree #' },
+      { key: 'species', text: 'Species' },
+      { key: 'species_group', text: 'Species Group', type: 'number' },
+      { key: 'block_x', text: 'Block X', type: 'number' },
+      { key: 'block_y', text: 'Block Y', type: 'number' },
+      { key: 'coord_x', text: 'X Coord', type: 'number' },
+      { key: 'coord_y', text: 'Y Coord', type: 'number' },
+      { key: 'diameter_cm', text: 'Diameter (cm)', type: 'number' },
+      { key: 'height_m', text: 'Height (m)', type: 'number' },
+      { key: 'volume_m3', text: 'Volume (m³)', type: 'number' },
+    ])
 
+    // Fetch data from backend API
+    const loadTreeData = async () => {
+      loading.value = true
+      error.value = null
 
-    // CSV file path
-    const CSV_FILE_PATH = forestCsvUrl
+      try {
+        const response = await fetch('http://localhost:5000/api/forest-trees')
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch tree data from server')
+        }
+
+        const data = await response.json()
+        
+        // Transform data to match your frontend structure
+        trees.value = data.map(tree => ({
+          treeNum: tree.treeNum,
+          species: tree.species,
+          species_group: parseInt(tree.species_group) || 0,
+          block_x: parseInt(tree.block_x) || 0,
+          block_y: parseInt(tree.block_y) || 0,
+          coord_x: parseInt(tree.coord_x) || 0,
+          coord_y: parseInt(tree.coord_y) || 0,
+          diameter_cm: parseFloat(tree.diameter_cm) || 0,
+          height_m: parseFloat(tree.height_m) || 0,
+          volume_m3: parseFloat(tree.volume_m3) || 0,
+        }))
+
+      } catch (err) {
+        console.error('Error loading tree data:', err)
+        error.value = err.message
+      } finally {
+        loading.value = false
+      }
+    }
 
     // Computed properties
+    const totalTrees = computed(() => trees.value.length)
+    
+    const totalSpecies = computed(() => {
+      const uniqueSpecies = new Set(trees.value.map(tree => tree.species))
+      return uniqueSpecies.size
+    })
+    
+    const totalSpeciesGroups = computed(() => {
+      const uniqueGroups = new Set(trees.value.map(tree => tree.species_group))
+      return uniqueGroups.size
+    })
+
     const filteredTrees = computed(() => {
       if (!searchQuery.value) return trees.value
       
@@ -266,59 +332,10 @@ export default {
     })
 
     // Methods
-    const loadTreeData = async () => {
-      loading.value = true
-      error.value = null
-
-      try {
-        const response = await fetch(CSV_FILE_PATH)
-        
-        if (!response.ok) {
-          throw new Error('CSV file not found')
-        }
-
-        const csvText = await response.text()
-        
-      Papa.parse(csvText, {
-        header: true,
-        skipEmptyLines: true,
-        transformHeader: header => header.trim(), // <-- trims leading/trailing spaces
-        complete: (results) => {
-          trees.value = results.data.map(row => ({
-            BlockX: parseInt(row.BlockX) || 0,
-            BlockY: parseInt(row.BlockY) || 0,
-            x: parseFloat(row.x) || 0,
-            y: parseFloat(row.y) || 0,
-            TreeNum: row.TreeNum,
-            species: row.species,
-            spgroup: row.spgroup,
-            'Diameter (dbc cm)': parseFloat(row['Diameter (dbc cm)']) || 0,
-            'Stem Height': parseFloat(row['Stem Height']) || 0,
-            'Volume (m3)': parseFloat(row['Volume (m3)']) || 0,
-            status: row.status,
-            PROD: row.PROD,
-            'Damage(Cut angle)': row['Damage(Cut angle)'],
-            'Damage STEM': row['Damage STEM'],
-            'Damage Crown': row['Damage Crown'],
-            d30: parseFloat(row.d30) || 0,
-            VOL30: parseFloat(row.VOL30) || 0
-          }))
-          loading.value = false 
-        }
-      })
-      } catch (err) {
-        console.error('Error loading tree data:', err)
-        error.value = err.message
-        loading.value = false
-      }
-    }
-
     const sortTable = (column) => {
       if (sortBy.value === column) {
-        // Reverse direction if same column clicked
         sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
       } else {
-        // New column, default to ascending
         sortBy.value = column
         sortDirection.value = 'asc'
       }
@@ -329,31 +346,24 @@ export default {
         return '-'
       }
 
-      // Special formatting for Block coordinates
-      if (key === 'BlockX' || key === 'BlockY') {
-        return parseInt(value) || 0
-      }
-
       // Format numeric values
       if (typeof value === 'number' || !isNaN(value)) {
         const numValue = parseFloat(value)
-        if (isNaN(numValue)) return '-' // catch string NaNs like 'NaN'
-        if (key.includes('Volume') || key.includes('VOL')) return numValue.toFixed(3)
-        if (key.includes('Diameter') || key.includes('Height') || key.includes('d30')) 
-          return numValue.toFixed(1)
+        if (key === 'volume') return numValue.toFixed(3)
+        if (key === 'diameter' || key === 'height') return numValue.toFixed(1)
         return numValue
       }
 
       return value
     }
 
-    // Load data when component mounts
-    onMounted(() => {
-      loadTreeData()
-    })
+    // Load data on mount
+    onMounted(loadTreeData)
 
     return {
-      // Reactive data
+      totalTrees,
+      totalSpecies,
+      totalSpeciesGroups,
       trees,
       loading,
       error,
@@ -363,16 +373,18 @@ export default {
       sortBy,
       sortDirection,
       tableHeaders,
-      
-      // Computed properties
       filteredTrees,
       paginatedTrees,
       totalPages,
-      firstItem,
-      lastItem,
-      visiblePages,
-      
-      // Methods
+      firstItem: computed(() => (currentPage.value - 1) * itemsPerPage.value + 1),
+      lastItem: computed(() => Math.min(currentPage.value * itemsPerPage.value, filteredTrees.value.length)),
+      visiblePages: computed(() => {
+        const maxVisible = 5
+        let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2))
+        let end = Math.min(totalPages.value, start + maxVisible - 1)
+        if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1)
+        return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+      }),
       loadTreeData,
       sortTable,
       formatCell
@@ -382,6 +394,21 @@ export default {
 </script>
 
 <style scoped>
+.stat-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.text-success {
+  color: #2d5a27 !important;
+}
 .sort-active {
   background-color: rgba(74, 125, 58, 0.1);
 }
@@ -406,7 +433,7 @@ export default {
 
 .page-item.active .page-link {
   background-color: #8bc34a;
-  border-color: #2d5a27;
+  border-color: #8bc34a;
 }
 
 .form-select:focus,
